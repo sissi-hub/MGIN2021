@@ -194,7 +194,7 @@
                 $appointments[$id] = $appointment;
             }
             if($appFn == "display" || $appFn == "2"){
-                foreach ($appointments as &$app) {appointment
+                foreach ($appointments as &$app) {
                     echo "\n#";
                     echo "id: ", $app->getID();
                     echo "\n<datum>: ", $app->getDate();
