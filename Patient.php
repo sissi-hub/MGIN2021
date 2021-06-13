@@ -1,5 +1,6 @@
 <?php
-    class Patient//Änderungen {
+    #patientenklasse
+    class Patient {
         public $svnr = 'null';
         public $vorname = 'null';
         public $nachname = 'null';
@@ -26,8 +27,9 @@
             $this->blutgruppe = $blutgruppe;
         }
     }
+    #terminklasse
     class Termin {
-        public $id = '12';
+        public $id = 'null';
         public $datum = 'null';
         public $zeit = 'null';
         public $pat1 = 'null';
@@ -58,6 +60,7 @@
             $this->pat2 = $pat2;
         }
     }
+    #spende-klasse: bei jeder Spende wird die kompatibilität der patienten (per blutgruppe) ermittelt und zurückgegeben
     class Spende{
         protected $compatibility = 0;
         public function getCompatibility() {
@@ -133,7 +136,7 @@
             }
         }
     }
-    #userinput-loop:
+    #arrays zum speichern der patienten und termine
     $array = [
     0 => new Patient("null", "null", "null", "null")
     ];
@@ -141,6 +144,7 @@
         0 => new Termin("0", "2021-10-03", "12:30", "1", "2")
     ];
     echo"OSKA - OrganSpende Kompatibilitäts Applikation";
+    #userinput-loop:
     for ($i = 1; $i <= 10; $i++){
         echo"\n>";
         $fn = readline();
@@ -149,10 +153,12 @@
               echo"+-----------------------------------------------------------------+";
             echo"\n|'help' or '?' - this view                                        |";
             echo"\n|1: 'new' - create a new patient                                  |";
-            echo"\n|2: 'print' - print all patients                                  |";
-            echo"\n|3: 'appointment' - create and view appointments                  |";
-            echo"\n|4: 'quick eval' - quickly evaluate compatibility of two patients |";
-            echo"\n|5: 'eval' - evaluate compatibility of two patients               |";
+            echo"\n|2: 'all' - print all patients                                    |";
+            echo"\n|3: 'one' - print one patients                                    |";
+            echo"\n|4: 'appointment' - create and view appointments                  |";
+            echo"\n|5: 'quick eval' - quickly evaluate compatibility of two patients |";
+            echo"\n|6: 'eval' - evaluate compatibility of two patients               |";
+            echo"\n|7: 'search' - look for patients who are compatible               |";
             echo"\n+-----------------------------------------------------------------+\n";
         }
         if($fn == "new" || $fn == "1"){ #create new patient instance
@@ -167,7 +173,7 @@
             $patient = new Patient($svnr, $surname, $name, $bloodtype);
             $array[$svnr] = $patient;
         }
-        if($fn == "print" || $fn == "get all" || $fn == "2"){ #print all patients
+        if($fn == "all" || $fn == "print" || $fn == "2"){ #print all patients
             foreach ($array as &$value) {
                 echo "\n<svnr>: ", $value->getSvnr();
                 echo "\n<vorname>: ", $value->getName();
@@ -175,7 +181,39 @@
                 echo "\n<blutgruppe>: ", $value->getBloodtype();
             }
         }
-        if($fn == "appointment" || $fn == "termin" || $fn == "3"){ #appointments
+        if($fn == "one" || $fn == "get" || $fn == "3"){ #print all patients
+            echo"<id>: ";
+            $id = readline();
+            try {
+                echo "\n<svnr>: ", $array[$id]->getSvnr();
+                echo "\n<vorname>: ", $array[$id]->getName();
+                echo "\n<nachname>: ", $array[$id]->getSurname();
+                echo "\n<blutgruppe>: ", $array[$id]->getBloodtype();
+            }
+            finally{
+                echo"#ERROR - ID invalid";
+            }
+        }
+        if($fn == "search" || $fn == "look" || $fn == "7"){ #look for compatible patients
+            echo"\n<id>: ";
+            $id = readline();
+            try {
+                $bt = $array[$id]->getBloodtype();
+                echo "\npossible compatibilities found:";
+                foreach ($array as &$value) {
+                    $patient1 = new Patient("lsdjfckljdsNVJKN", "testuser", "testuser", $bt);
+                    $patient2 = new Patient("JHBFlkjbelFHFJhe", "testuser", "testuser", $value->getBloodtype());
+                    $spende = new Spende($patient1, $patient2);
+                    if($spende->getCompatibility() == 1){
+                        echo "\npatient with SVNR: ", $value->getSVNR();
+                    }
+                }
+            }
+            catch (Exception $e) {
+                echo '#ERROR: ',  $e->getMessage(), "\n";
+            }
+        }
+        if($fn == "appointment" || $fn == "termin" || $fn == "4"){ #appointments
             echo"\n<'create' or 'display'>: ";
             $appFn = readline();
 
@@ -200,6 +238,7 @@
                     echo "\n<datum>: ", $app->getDate();
                     echo "\n<zeit>: ", $app->getTime();
                     echo "\n<svnr-1>: ", $app->getSVNR1();
+                    echo "\n<name-1>: ", $app->getSVNR1();
                     echo "\n<svnr-2>: ", $app->getSVNR2(), "\n";
                 }
             }
@@ -207,7 +246,7 @@
                 echo"\ninput not recognized";
             }
         }
-        if($fn == "quick eval" || $fn == "quick" || $fn == "4"){ #print all patients
+        if($fn == "quick eval" || $fn == "quick" || $fn == "5"){ #schnelle evaluierung der kompatibilität nur unter eingabe der blugruppe
             echo"\nBitte geben sie die Blutgruppen der zwei Patienten ein, deren Kompatibilität Sie überprüfen wollen.";
             echo"\n<blutgruppe/p1>: ";
             $p1 = readline();
@@ -224,18 +263,18 @@
             if($spende->getCompatibility() == 1){
                 echo "true |";
                 echo"\n+---------------------+";
-                echo "\n\e[32m--> the patients: \e[4m", $patient1->getSurname(), " ", $patient1->getName(), "\e[0m\e[32m and \e[4m", $patient2->getSurname(), " ", $patient2->getName(), "\e[0m\e[32m are compatible.\e[39m";
+                echo "\n\e[32m--> the patients are compatible.\e[39m";
             }
             elseif ($spende->getCompatibility() == 0){
                 echo"false |";
                 echo"\n+---------------------+";
-                echo "\n\e[31m--> the patients: \e[4m", $patient1->getSurname(), " ", $patient1->getName(), "\e[0m\e[31m and \e[4m", $patient2->getSurname(), " ", $patient2->getName(), "\e[0m\e[31m are not compatible.\e[39m";
+                echo "\n\e[32m--> the patients are not compatible.\e[39m";
             }
             else {
                 echo "error |";
             }
         }
-        if($fn == "eval" || $fn == "5"){ #evaluate compatibility
+        if($fn == "eval" || $fn == "6"){ #evaluate compatibility
             echo"\nBitte geben sie die SVNRs der zwei Patienten ein, deren Kompatibilität Sie überprüfen wollen.";
             echo"\n<svnr/p1>: ";
             $p1 = readline();
@@ -256,7 +295,7 @@
                 echo"\n+---------------------+";
                 echo "\n\e[31m--> the patients: \e[4m", $array[$p1]->getSurname(), " ", $array[$p1]->getName(), "\e[0m\e[31m and \e[4m", $array[$p2]->getSurname(), " ", $array[$p2]->getName(), "\e[0m\e[31m are not compatible.\e[39m";
             }
-            else {wdw
+            else {
                 echo "error |";
             }
         }
