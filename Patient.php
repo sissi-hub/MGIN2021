@@ -1,5 +1,5 @@
 <?php
-    class Patient//Änderungen {
+    class Patient//Änderungen123 {
         public $svnr = 'null';
         public $vorname = 'null';
         public $nachname = 'null';
